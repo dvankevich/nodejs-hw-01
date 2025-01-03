@@ -1,30 +1,15 @@
 import fs from 'node:fs/promises';
-import { PATH_DB, PATH_DB1 } from './constants/contacts.js';
+import { PATH_DB } from './constants/contacts.js';
 import { writeContacts } from './utils/writeContacts.js';
 import { readContacts } from './utils/readContacts.js';
 
-console.log('PATH_DB: ', PATH_DB);
-console.log('PATH_DB1: ', PATH_DB1);
-
-//https://byby.dev/sleep-in-nodejs
-const sleep = (millis) => {
-  console.log('delay', millis, 'millis');
-
-  const stop = new Date().getTime();
-  while (new Date().getTime() < stop + millis) {
-    // Пустий оператор, нічого не виконується
-  }
-};
-
-// тестування функцій
-//
-// видаляємо файл зі шляхом PATH_DB, якщо він існує
-console.log('--> спроба видалити файл ', PATH_DB);
-(async () => {
+const deleteFile = async () => {
+  console.log('--> спроба видалити файл ', PATH_DB);
   try {
-    // перевірка доступності файлу
+    // Перевірка доступності файлу
     await fs.access(PATH_DB);
     console.log(`Файл або каталог '${PATH_DB}' доступний.`);
+
     // Видалення файлу
     await fs.unlink(PATH_DB);
     console.log(`Файл '${PATH_DB}' успішно видалено.`);
@@ -38,28 +23,32 @@ console.log('--> спроба видалити файл ', PATH_DB);
       );
     }
   }
-})();
+};
 
-sleep(2000); // Затримка 2 сек.
+// тестування функцій
+// Функція для виконання всіх дій послідовно
+const executeSequence = async () => {
+  console.log('--> видалення файлу PATH_DB');
 
-console.log('--> виклик readContacts() при відсутньому файлі PATH_DB');
-(async () => {
+  await deleteFile(); // Вилучення файлу
+
+  console.log('--> виклик readContacts() при відсутньому файлі PATH_DB');
   const contacts = await readContacts();
   console.log('Contacts:', contacts);
-})();
 
-sleep(1000); // Затримка 1 сек.
+  //await new Promise((resolve) => setTimeout(resolve, 1000)); // Затримка 1 сек.
 
-console.log(
-  '--> виклик writeContacts() без параметрів має записати в файл PATH_DB значення []',
-);
-writeContacts();
+  console.log(
+    '--> виклик writeContacts() без параметрів має записати в файл PATH_DB значення []',
+  );
+  await writeContacts(); // Передбачається, що writeContacts - асинхронна функція
 
-sleep(1000); // Затримка 1 сек.
+  await new Promise((resolve) => setTimeout(resolve, 1000)); // Затримка 1 сек.
 
-console.log('--> Читання пустого файлу');
+  console.log('--> Читання пустого файлу');
+  const contactsAfterWrite = await readContacts();
+  console.log('Contacts:', contactsAfterWrite);
+};
 
-(async () => {
-  const contacts = await readContacts();
-  console.log('Contacts:', contacts);
-})();
+// Виклик функції для виконання
+executeSequence();
