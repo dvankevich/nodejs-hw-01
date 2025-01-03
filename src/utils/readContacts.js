@@ -12,7 +12,12 @@ export const readContacts = async () => {
     // console.log('Object', JSON.parse(data));
     return JSON.parse(data); // повертаємо масив
   } catch (err) {
-    console.error('Помилка читання файлу:', err);
-    return null; // при помилці повертаємо null
+    if (err.code === 'ENOENT') {
+      console.error('Файл не існує.');
+      return null; // при помилці повертаємо null
+    } else {
+      console.error('Помилка читання файлу:', err);
+      return null; // при помилці повертаємо null
+    }
   }
 };
